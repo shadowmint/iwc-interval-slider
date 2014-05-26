@@ -5,15 +5,13 @@
   "description": "",
   "homepage": "",
   "private": true,
-  "dependencies": {
+  "devDependencies": {
     "bower": "",
-    "typescript": "~1.0.0",
-    "connect": "^2.17.1",
-    "grunt-contrib-watch": "^0.6.1"
     "grunt": "^0.4.5",
+    "connect": "^2.17.1",
+    "grunt-contrib-watch": "^0.6.1",
     "grunt-contrib-clean": "^0.5.0",
-    "grunt-contrib-sass": "^0.7.3",
-    "grunt-ts": "^1.11.2",
+    "iwc-grunt": "git://github.com/shadowmint/iwc-grunt.git#master",
     "matchdep": "^0.3.0"
   }
 }
