@@ -1,18 +1,44 @@
 'use strict';
+var ext = require('./.gruntExt');
 module.exports = function (grunt) {
 
-    // Tasks
-    require('matchdep').filterAll(['*-grunt', 'grunt-*']).forEach(function (x) { grunt.loadNpmTasks(x); });
+    // Compile parts
+    ext.configure({
+      sass: {
+        compile: {
+          files: {
+            'src/iwc-clock/styles.css': 'src/iwc-clock/styles.scss'
+          }
+        }
+      },
+      jade: {
+        compile: {
+          files: {
+            'src/iwc-clock/markup.html': 'src/iwc-clock/markup.jade'
+          }
+        }
+      },
+      watch: {
+          sass: {
+              files: ['src/iwc-clock/*.scss'],
+              tasks: ['sass:compile'],
+              options: {
+                  spawn: true
+              }
+          },
+          jade: {
+              files: ['src/iwc-clock/*.jade'],
+              tasks: ['jade:compile'],
+              options: {
+                  spawn: true
+              }
+          }
+      }
+    });
+    ext.registerTask('compile', ['sass:compile', 'jade:compile']);
 
-    // Project configuration.
-    grunt.initConfig({
-
-        // Before generating any new files, remove any previously-created files.
-        clean: {
-            component: ['dist/*']
-        },
-
-        // Assemble
+    // Compile component
+    ext.configure({
         iwc: {
             component: {
                 src: 'src/*',
@@ -22,8 +48,6 @@ module.exports = function (grunt) {
                 }
             }
         },
-
-        // Watch
         watch: {
             component: {
                 files: ['src/*'],
@@ -32,11 +56,17 @@ module.exports = function (grunt) {
                     spawn: false
                 }
             }
-        },
+        }
+    });
+    ext.registerTask('component', ['iwc:component']);
 
-        // Demo
+    // Other bits
+    ext.configure({
+        clean: {
+            component: ['dist/*']
+        },
         connect: {
-            lib: {
+            demo: {
                 options: {
                     port: 3008,
                     base: '.'
@@ -46,6 +76,9 @@ module.exports = function (grunt) {
     });
 
     // Build the task libraries
-    grunt.registerTask('default', ['clean', 'iwc']);
-    grunt.registerTask('dev', ['default', 'connect', 'watch']);
+    ext.registerTask('default', ['clean', 'compile', 'component']);
+    ext.registerTask('dev', ['default', 'connect', 'watch']);
+
+    // Load config
+    ext.initConfig(grunt);
 };

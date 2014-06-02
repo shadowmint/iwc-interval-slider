@@ -44,6 +44,6 @@
     });
   });
 })({
-  styles: ".component--hello-label > div {\n    padding: 10px 10px 5px 3px;\n    font-family: serif;\n    text-transform: capitalize;\n    font-size: 1.4em;\n}\n\n.component--hello-label > div {\n    border-bottom: 2px solid #efefef;\n}",
-  markup: "<div class='target'>{{data.data-value}}</div>"
+  styles: "",
+  markup: "<html><div><div></div><ui class=\"hello\"></ui></div></html>"
 });
