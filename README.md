@@ -1,4 +1,6 @@
-# IWC Hello World
+# Clock
+
+An example clock component using jade & sass.
 
 ## Build
 
