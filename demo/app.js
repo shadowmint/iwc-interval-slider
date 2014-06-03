@@ -6,6 +6,6 @@ require.config({
     }
 });
 
-require(['../dist/hello-button', '../dist/hello-label'], function () {
+require(['../dist/iwc-clock'], function () {
     console.log('loaded all components');
 });

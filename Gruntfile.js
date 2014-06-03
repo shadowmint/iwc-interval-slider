@@ -4,56 +4,78 @@ module.exports = function (grunt) {
 
     // Compile parts
     ext.configure({
-      sass: {
-        compile: {
-          files: {
-            'src/iwc-clock/styles.css': 'src/iwc-clock/styles.scss'
-          }
+        sass: {
+            compile: {
+                files: {
+                    'src/iwc-clock/styles.css': 'src/styles.scss'
+                }
+            }
+        },
+        jade: {
+            compile: {
+                files: {
+                    'src/iwc-clock//markup.html': 'src/markup.jade'
+                }
+            }
+        },
+        typescript: {
+            compile: {
+                src: ['src/script.ts'],
+                dest: 'src/iwc-clock/',
+                options: {
+                    module: 'amd',
+                    target: 'es3',
+                    basePath: 'src/',
+                    sourceMap: true,
+                    declaration: true
+                }
+            }
+        },
+        watch: {
+            sass: {
+                files: ['src/*.scss'],
+                tasks: ['sass:compile'],
+                options: {
+                    spawn: true
+                }
+            },
+            jade: {
+                files: ['src/*.jade'],
+                tasks: ['jade:compile'],
+                options: {
+                    spawn: true
+                }
+            },
+            typescript: {
+                files: ['src/*.ts'],
+                tasks: ['typescript:compile'],
+                options: {
+                    spawn: true
+                }
+            }
         }
-      },
-      jade: {
-        compile: {
-          files: {
-            'src/iwc-clock/markup.html': 'src/iwc-clock/markup.jade'
-          }
-        }
-      },
-      watch: {
-          sass: {
-              files: ['src/iwc-clock/*.scss'],
-              tasks: ['sass:compile'],
-              options: {
-                  spawn: true
-              }
-          },
-          jade: {
-              files: ['src/iwc-clock/*.jade'],
-              tasks: ['jade:compile'],
-              options: {
-                  spawn: true
-              }
-          }
-      }
     });
-    ext.registerTask('compile', ['sass:compile', 'jade:compile']);
+    ext.registerTask('compile', ['sass:compile', 'jade:compile', 'typescript:compile']);
 
     // Compile component
     ext.configure({
         iwc: {
             component: {
-                src: 'src/*',
-                dest: 'dist',
-                options: {
-                    postfix: '.js'
-                }
+                src: 'src/iwc-clock',
+                dest: 'dist'
             }
         },
         watch: {
             component: {
-                files: ['src/*'],
+                files: [
+                    'src/**/*.js',
+                    'src/**/*.css',
+                    'src/**/*.html'
+                ],
                 tasks: ['iwc:component'],
                 options: {
-                    spawn: false
+                    spawn: true,
+                    livereload: true
                 }
             }
         }

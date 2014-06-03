@@ -1,66 +1,21 @@
 <html>
 <head>
     <title>Demo</title>
-    <style>
-        section {
-            padding: 10px;
-            margin: 10px;
-        }
-        #action {
-            float: right;
-            font-family: sans-serif;
-            font-size: 0.9em;
-            margin-top: -40px;
-        }
-    </style>
 </head>
 <body>
-    <!-- Basic label component -->
-    <section>
-        <div class="component--hello-label" data-value="Components demo"></div>
-    </section>
-
-    <!-- Basic button component -->
-    <section>
-        <div class="component--hello-button">
-            <span data-header="This label comes from the markup"></span>
-        </div>
-    </section>
-
-    <!-- Component javascript interaction 1 -->
-    <section>
-        <div id="test2" class="component--hello-button" data-loaded="on_loaded()">
-            <meta data-header="Click here for alert"/>
-        </div>
-        <script>
-            function on_loaded() {
-                console.log("Loaded again");
-                components.hello.button(document.getElementById('test2'), function (r) {
-                    r.model.clicks.push(function () {
-                        alert('Custom event handler invoked');
-                    })
-                });
+<section>
+    <div class="component--iwc-clock"></div>
+</section>
+<script data-main="app" src="/bower_components/requirejs/require.js"></script>
+<script>
+    (function () {
+        var ws = new WebSocket("ws://localhost:35729");
+        ws.onmessage = function (msg) {
+            if ((JSON.parse(msg.data)).command == "reload") {
+                window.location.reload();
             }
-        </script>
-    </section>
-
-    <!-- Component javascript interaction 2 -->
-    <section>
-        <div id="blah" class="component--hello-label" data-value="This label can be altered using javascript"></div>
-        <a href="#" id="action">Change label</a>
-        <script>
-            var action = document.getElementById('action');
-            action.onclick = function () {
-                var query = components.hello.label;
-                var e = document.getElementById('blah');
-                query(e, function (r) {
-                    r.model.value = "click was clicked";
-                });
-                return false;
-            }
-        </script>
-    </section>
-
-    <script data-main="app" src="/bower_components/requirejs/require.js"></script>
+        };
+    })();
+</script>
 </body>
 </hhtml>

@@ -1,0 +1,110 @@
+@import 'styles/math';
+
+.component--iwc-clock {
+
+  // vars
+  $outer: 120;
+  $radius: 100;
+  $count: 12;
+  $inc: 360 / $count;
+  $offx: 40px;
+  $offy: 45px;
+
+  // Outside
+  .outer {
+    width: #{($outer * 2 + 90)}px;
+    height: #{($outer * 2 + 80)}px;
+    background: #0066bb;
+  }
+
+  // Border edge
+  .edge {
+    border: 5px double #9f9f9f;
+    border-radius: #{$radius * 2 + 2}px;
+    width: #{$outer * 2 + 10}px;
+    height: #{$outer * 2 + 10}px;
+    left: $offx;
+    top: $offy;
+    position: absolute;
+    background: #fff;
+    z-index: 0;
+  }
+
+  // Face numbers
+  .numbers {
+    z-index: 1;
+    border-radius: #{$radius * 2}px;
+    width: #{$outer * 2}px;
+    height: #{$outer * 2}px;
+    position: relative;
+    padding: 0px;
+    margin: 0px;
+    left: $offx + 2px;
+    top: $offy - 6px;
+    @for $i from 0 through $count {
+      $angle: $inc * ($i - 7);
+      li:nth-child(#{$i}) {
+        display: block;
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        text-align: center;
+        font-size: 15px;
+        line-height: 20px;
+        font-family: sans-serif;
+        top: #{($outer - $radius) / 2 + $radius + $radius * _cos($angle)}px;
+        left: #{($outer - $radius) / 2 + $radius + $radius * _sin($angle)}px;
+        z-index: 3;
+      }
+    }
+
+    // Ticks
+    $tick_seg_size: 10px;
+    $tick_size: $outer;
+    @function gradients() {
+      $rtn: "";
+      $end: 60;
+      $angle: 360 / $end;
+      $size_small: 0.8%;
+      $size_big: 2%;
+      @for $i from 0 through $end {
+        $size: $size_small;
+        @if $i % 5 == 0 {
+          $size: $size_big;
+        }
+        $rtn: $rtn +
+      "linear-gradient(" + (90 + $i * $angle) + "deg, " +
+      "transparent " + (50% - $size / 2) + ", " +
+      "transparent " + (50% - $size / 2) + ", " +
+      "black " + (50% - $size / 10) + ", " +
+      "black " + (50% + $size / 10) + ", " +
+      "transparent " + (50% + $size / 2) + ", " +
+      "transparent " + (50% + $size / 2) + ")";
+        @if $i != $end {
+          $rtn: $rtn + ", ";
+        }
+      }
+      @return $rtn;
+    }
+    position: relative;
+    border-radius: $tick_size/2;
+    background-color: #fff;
+    background-image: unquote(gradients());
+
+    // Overlay to hide the center of the ticks
+    $overlay_sz: 12;
+    $overlay_size: #{$outer * 2 - $overlay_sz}px;
+    $overlay_offset: #{$overlay_sz / 2}px;
+    .overlay {
+      background: #fff;
+      border-radius: $overlay_size;
+      width: $overlay_size;
+      height: $overlay_size;
+      left: $overlay_offset;
+      top: $overlay_offset;
+      position: absolute;
+      z-index: 2;
+      display: block;
+    }
+  }
+}
