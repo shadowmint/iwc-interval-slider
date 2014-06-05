@@ -4,11 +4,12 @@
 
   // vars
   $outer: 120;
-  $radius: 100;
+  $radius: 95;
   $count: 12;
   $inc: 360 / $count;
   $offx: 40px;
   $offy: 45px;
+  $nwidth: 40;
 
   // Outside
   .outer {
@@ -39,21 +40,22 @@
     position: relative;
     padding: 0px;
     margin: 0px;
-    left: $offx + 2px;
-    top: $offy - 6px;
+    left: $offx + 1px;
+    top: $offy - 5px;
     @for $i from 0 through $count {
       $angle: $inc * ($i - 7);
       li:nth-child(#{$i}) {
         display: block;
         position: absolute;
-        width: 20px;
-        height: 20px;
+        width: #{$nwidth}px;
+        height: 1px;
         text-align: center;
-        font-size: 15px;
-        line-height: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        line-height: 1px;
         font-family: sans-serif;
-        top: #{($outer - $radius) / 2 + $radius + $radius * _cos($angle)}px;
-        left: #{($outer - $radius) / 2 + $radius + $radius * _sin($angle)}px;
+        top: #{14 + ($outer - $radius) / 2 + $radius + $radius * _cos($angle)}px;
+        left: #{14 - $nwidth / 2 + ($outer - $radius) / 2 + $radius + $radius * _sin($angle)}px;
         z-index: 3;
       }
     }
@@ -105,6 +107,29 @@
       position: absolute;
       z-index: 2;
       display: block;
+    }
+  }
+
+  .big {
+    transform: rotate(45deg);
+    z-index: 20;
+    > div {
+      width: 0;
+      height: 0;
+      border: 20px solid transparent;
+      border-left: 20px solid red;
+      position: relative;
+      left: 150px;
+      &:after {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: -110px;
+        width: 0;
+        height: 0;
+        border: 20px solid transparent;
+        border-right: 70px solid red;
+      }
     }
   }
 }
