@@ -152,6 +152,7 @@ define(["require", "exports", 'iwc', 'jquery', 'handlebars'], function(require, 
 
     var Draggable = (function () {
         function Draggable(target) {
+            this._root = target;
             this.track_cursor();
         }
         Draggable.prototype.track_cursor = function () {

@@ -2,7 +2,8 @@
 .baseDir*
 *.ts.js
 *.js.map
-*.d.ts
+dist/*.d.ts
+src/*.d.ts
 *.css
 node_modules
 bower_components
