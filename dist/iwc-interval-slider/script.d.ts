@@ -29,9 +29,16 @@ export declare class Slider extends Base {
     public state(ref: iwc.Ref): any[];
     public update(ref: iwc.Ref): void;
     public instance(ref: iwc.Ref): void;
+    private _move_to_closest(d, r);
 }
 export declare class Draggable {
     private _root;
+    private _active;
+    private _bounds;
+    private _width;
+    public offset: number;
+    public onrelease: (d: Draggable) => void;
     constructor(target: any);
+    public move(pos: number): void;
     public track_cursor(): void;
 }

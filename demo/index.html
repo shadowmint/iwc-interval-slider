@@ -3,7 +3,36 @@
     <title>Demo</title>
 </head>
 <body>
-<section>
+
+<style>
+    section {
+        margin: 30px;
+    }
+</style>
+
+<section style="width: 600px">
+    <div class="component--iwc-interval-slider">
+        <div data-interval="1"></div>
+        <div data-interval="1"></div>
+        <div data-interval="2"></div>
+        <div data-interval="4"></div>
+    </div>
+</section>
+
+<section style="width: 800px">
+    <div class="component--iwc-interval-slider">
+        <div data-interval="1"></div>
+        <div data-interval="1"></div>
+        <div data-interval="2"></div>
+        <div data-interval="4"></div>
+        <div data-interval="2"></div>
+        <div data-interval="4"></div>
+        <div data-interval="2"></div>
+        <div data-interval="4"></div>
+    </div>
+</section>
+
+<section style="width: 400px">
     <div id="cmp" class="component--iwc-interval-slider">
         <div data-interval="1"></div>
         <div data-interval="2"></div>
@@ -13,10 +42,8 @@
         <div data-interval="4"></div>
     </div>
 </section>
+
 <section>
-    <br/>
-    <br/>
-    <br/>
     Selected value: <span id="value"></span>
 </section>
 <script data-main="app" src="/bower_components/requirejs/require.js"></script>

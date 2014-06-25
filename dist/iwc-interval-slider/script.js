@@ -123,11 +123,17 @@ define(["require", "exports", 'iwc', 'jquery', 'handlebars'], function(require, 
         };
 
         Slider.prototype.instance = function (ref) {
+            var _this = this;
             var intervals = ref.view['data-interval'];
+            ref.model.tmp = Math.random();
             ref.model.intervals = [];
             ref.view.intervals = [];
             ref.view.markers = $(ref.root).find('.intervals');
+            console.log(ref);
             ref.view.marker = new Draggable($(ref.root).find('.marker'));
+            ref.view.marker.onrelease = function (d) {
+                _this._move_to_closest(d, ref);
+            };
             var count = intervals.length > 0 ? intervals.length : 1;
             var size = 100 / (count - 1);
             for (var i = 0; i < intervals.length; ++i) {
@@ -140,11 +146,34 @@ define(["require", "exports", 'iwc', 'jquery', 'handlebars'], function(require, 
                 ref.model.intervals.push(intervals[i]);
                 $mark.click(function (e) {
                     ref.action(function (ref) {
+                        console.log(ref.model.tmp);
                         var value = $(e.target).data('value');
                         ref.model.selected = value;
                     });
                 });
             }
+        };
+
+        Slider.prototype._move_to_closest = function (d, r) {
+            var min = -1;
+            var offset = -1;
+            var value = 0;
+            console.log(r.view.intervals);
+            for (var i = 0; i < r.view.intervals.length; ++i) {
+                var item = r.view.intervals[i].offset().left;
+                var delta = Math.abs(item - d.offset);
+                if ((min == -1) || (delta < min)) {
+                    value = item;
+                    offset = i;
+                    min = delta;
+                }
+                console.log(value, offset, min);
+            }
+            console.log('FINAL', value, offset, min);
+            r.action(function (r) {
+                r.model.selected = offset;
+                d.move(value);
+            });
         };
         return Slider;
     })(Base);
@@ -152,12 +181,40 @@ define(["require", "exports", 'iwc', 'jquery', 'handlebars'], function(require, 
 
     var Draggable = (function () {
         function Draggable(target) {
+            var _this = this;
+            this.onrelease = null;
             this._root = target;
+            this._active = false;
+            this._width = this._root.width();
+            var offset = this._root.parent().offset();
+            var width = this._root.parent().width();
+            this._bounds = [offset.left, offset.left + width];
             this.track_cursor();
+            this._root.mousedown(function () {
+                _this._active = true;
+            });
         }
+        Draggable.prototype.move = function (pos) {
+            this._root.css('left', pos);
+            this.offset = pos;
+        };
+
         Draggable.prototype.track_cursor = function () {
+            var _this = this;
+            $(window).mouseup(function (e) {
+                if (_this._active) {
+                    _this._active = false;
+                    if (_this.onrelease) {
+                        _this.onrelease(_this);
+                    }
+                }
+            });
             $(window).mousemove(function (e) {
-                console.log(e.clientX);
+                if (_this._active) {
+                    if ((e.clientX > _this._bounds[0]) && (e.clientX < _this._bounds[1])) {
+                        _this.move(e.clientX);
+                    }
+                }
             });
         };
         return Draggable;

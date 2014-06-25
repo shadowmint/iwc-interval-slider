@@ -22,11 +22,11 @@ $base_height: 2px;
     background: #efefef;
     border: 1px solid #000;
     margin-left: -10px;
+    position: absolute;
   }
   .base {
-    height: $base_height;
+    height: $interval_height - $base_height;
+    border-bottom: $base_height solid #000;
     width: 100%;
-    background: #000;
-    margin-top: $interval_height - $base_height;
   }
 }
