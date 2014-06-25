@@ -1,0 +1,32 @@
+$interval_width: 4px;
+$interval_height: 15px;
+$base_height: 2px;
+
+.component--iwc-interval-slider {
+  .intervals {
+    position: relative;
+    .interval {
+      position: absolute;
+      width: $interval_width;
+      margin-left: -$interval_width / 2;
+      height: $interval_height;
+      background: #000;
+      &.active {
+        background: #f00;
+      }
+    }
+  }
+  .marker {
+    height: 20px;
+    width: 20px;
+    background: #efefef;
+    border: 1px solid #000;
+    margin-left: -10px;
+  }
+  .base {
+    height: $base_height;
+    width: 100%;
+    background: #000;
+    margin-top: $interval_height - $base_height;
+  }
+}

@@ -6,6 +6,11 @@ require.config({
     }
 });
 
-require(['../dist/iwc-clock'], function () {
-    console.log('loaded all components');
+require(['../dist/iwc-interval-slider', 'jquery'], function () {
+    var cmp = $('#cmp')[0];
+    window.components.iwc['interval-slider'](cmp, function (r) {
+        r.view.onchange = function (r) {
+            $('#value').text(r.value);
+        }
+    });
 });

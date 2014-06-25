@@ -7,7 +7,7 @@ var config = {};
 var tasks = [];
 
 /* Are we in debug mode? */
-var debug = false;
+var debug = true;
 
 /* Trace debug messages */
 function trace(msg) {
@@ -58,9 +58,15 @@ function initConfig(grunt) {
   }
 }
 
+/* Initialize a submodule */
+function sub(ext) {
+    ext.load(ext);
+}
+
 // API
 module.exports = {
   configure: configure,
   registerTask: registerTask,
-  initConfig: initConfig
+  initConfig: initConfig,
+  trace: trace
 };

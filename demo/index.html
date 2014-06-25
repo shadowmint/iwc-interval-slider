@@ -4,18 +4,21 @@
 </head>
 <body>
 <section>
-    <div class="component--iwc-clock"></div>
+    <div id="cmp" class="component--iwc-interval-slider">
+        <div data-interval="1"></div>
+        <div data-interval="2"></div>
+        <div data-interval="5"></div>
+        <div data-interval="1"></div>
+        <div data-interval="2"></div>
+        <div data-interval="4"></div>
+    </div>
+</section>
+<section>
+    <br/>
+    <br/>
+    <br/>
+    Selected value: <span id="value"></span>
 </section>
 <script data-main="app" src="/bower_components/requirejs/require.js"></script>
-<script>
-    (function () {
-        var ws = new WebSocket("ws://localhost:35729");
-        ws.onmessage = function (msg) {
-            if ((JSON.parse(msg.data)).command == "reload") {
-                window.location.reload();
-            }
-        };
-    })();
-</script>
 </body>
 </hhtml>
