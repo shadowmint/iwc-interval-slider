@@ -24,9 +24,9 @@
 
       Slider.prototype.model = function() {
         return {
+          intervals: [],
           selected: 0,
-          value: null,
-          intervals: []
+          value: null
         };
       };
 
@@ -38,8 +38,20 @@
         };
       };
 
+      Slider.prototype.api = function() {
+        var _this = this;
+        return {
+          next: function(r) {
+            _this.next(r);
+          },
+          prev: function(r) {
+            _this.prev(r);
+          }
+        };
+      };
+
       Slider.prototype.state = function(ref) {
-        return [ref.model.selected];
+        return [ref.model.selected, ref.view.onchange];
       };
 
       Slider.prototype.update = function(ref) {
@@ -55,12 +67,16 @@
         if (ref.view.onchange) {
           ref.view.onchange(ref.model);
         }
+        this.move_to_selected(ref);
       };
 
       Slider.prototype.instance = function(ref) {
         var _this = this;
         var intervals = ref.view['data-interval'];
-        ref.model.tmp = Math.random();
+        if ((typeof intervals) == 'string') {
+          intervals = [intervals];
+          this.$(ref.root).hide();
+        }
         ref.model.intervals = [];
         ref.view.intervals = [];
         ref.view.markers = $(ref.root).find('.intervals');
@@ -82,9 +98,9 @@
             ref.action(function(ref) {
               var value = $(e.target).data('value');
               ref.model.selected = value;
-              _this.move_to_selected(ref);
             });
           });
+          this.move_to_closest(ref);
         }
       };
 
@@ -111,6 +127,22 @@
         r.action(function(r) {
           r.model.selected = offset;
           d.move(value);
+        });
+      };
+
+      Slider.prototype.next = function(r) {
+        r.action(function(r) {
+          if (r.model.selected < (r.model.intervals.length)) {
+            ++r.model.selected;
+          }
+        });
+      };
+
+      Slider.prototype.prev = function(r) {
+        r.action(function(r) {
+          if (r.model.selected > 0) {
+            --r.model.selected;
+          }
         });
       };
       return Slider;
@@ -168,7 +200,7 @@
   //# sourceMappingURL=script.js.map
 
 })({
-  styles: ".component--iwc-interval-slider .intervals {\n  position: relative; }\n  .component--iwc-interval-slider .intervals .interval {\n    position: absolute;\n    width: 4px;\n    margin-left: -2px;\n    height: 15px;\n    background: #000; }\n    .component--iwc-interval-slider .intervals .interval.active {\n      background: #f00; }\n.component--iwc-interval-slider .marker {\n  height: 20px;\n  width: 20px;\n  background: #efefef;\n  border: 1px solid #000;\n  margin-left: -10px;\n  position: absolute; }\n.component--iwc-interval-slider .base {\n  height: 13px;\n  border-bottom: 2px solid black;\n  width: 100%; }\n",
+  styles: ".component--iwc-interval-slider {\n  position: relative; }\n  .component--iwc-interval-slider .intervals {\n    position: relative; }\n    .component--iwc-interval-slider .intervals .interval {\n      position: absolute;\n      width: 4px;\n      margin-left: -2px;\n      height: 15px;\n      background: #000; }\n      .component--iwc-interval-slider .intervals .interval.active {\n        background: #f00; }\n  .component--iwc-interval-slider .marker {\n    height: 20px;\n    width: 20px;\n    background: #efefef;\n    border: 1px solid #000;\n    margin-left: -10px;\n    position: absolute; }\n  .component--iwc-interval-slider .base {\n    height: 13px;\n    border-bottom: 2px solid black;\n    width: 100%; }\n",
   markup: "<div><div class=\"marker\"></div><div class=\"intervals\"></div><div class=\"base\"></div></div>",
   resources: {}
 });

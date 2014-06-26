@@ -6,11 +6,14 @@ export declare class Slider extends iwc.Base {
     public targets(): HTMLElement[];
     public model(): any;
     public view(): any;
+    public api(): any;
     public state(ref: iwc.Ref): any[];
     public update(ref: iwc.Ref): void;
     public instance(ref: iwc.Ref): void;
     private move_to_selected(r);
     private move_to_closest(r);
+    public next(r: iwc.Ref): void;
+    public prev(r: iwc.Ref): void;
 }
 export declare class Draggable {
     private _root;

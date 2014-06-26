@@ -3,6 +3,7 @@ $interval_height: 15px;
 $base_height: 2px;
 
 .component--iwc-interval-slider {
+  position: relative;
   .intervals {
     position: relative;
     .interval {

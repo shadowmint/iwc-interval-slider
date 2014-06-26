@@ -12,20 +12,20 @@ export class Slider extends iwc.Base {
 
   constructor() {
     super('iwc-interval-slider', data);
-      this.$ = jquery;
+    this.$ = jquery;
   }
 
   public targets():HTMLElement[] {
-      var rtn = <HTMLElement[]> (<any> this.$('.component--iwc-interval-slider'));
-      return rtn;
+    var rtn = <HTMLElement[]> (<any> this.$('.component--iwc-interval-slider'));
+    return rtn;
   }
 
   public model():any {
     return {
+      intervals: [],
       selected: 0,
-      value: null,
-      intervals: []
-    }
+      value: null
+    };
   }
 
   public view():any {
@@ -36,8 +36,15 @@ export class Slider extends iwc.Base {
     };
   }
 
+  public api():any {
+    return {
+      next: (r) => { this.next(r); },
+      prev: (r) => { this.prev(r); }
+    }
+  }
+
   public state(ref:iwc.Ref):any[] {
-    return [ref.model.selected];
+    return [ref.model.selected, ref.view.onchange];
   }
 
   public update(ref:iwc.Ref):void {
@@ -54,16 +61,22 @@ export class Slider extends iwc.Base {
     if (ref.view.onchange) {
       ref.view.onchange(ref.model);
     }
+    this.move_to_selected(ref);
   }
 
   public instance(ref:iwc.Ref):void {
     var intervals = ref.view['data-interval'];
-    ref.model.tmp = Math.random();
+    if ((typeof intervals) == 'string') {
+      intervals = [intervals];
+      this.$(ref.root).hide();
+    }
     ref.model.intervals = [];
     ref.view.intervals = [];
     ref.view.markers = $(ref.root).find('.intervals');
     ref.view.marker = new Draggable($(ref.root).find('.marker'));
-    ref.view.marker.onrelease = (d) => { this.move_to_closest(ref); };
+    ref.view.marker.onrelease = (d) => {
+      this.move_to_closest(ref);
+    };
     var count = intervals.length > 0 ? intervals.length : 1;
     var size = 100 / (count - 1);
     for (var i = 0; i < intervals.length; ++i) {
@@ -78,17 +91,17 @@ export class Slider extends iwc.Base {
         ref.action((ref) => {
           var value = $(e.target).data('value');
           ref.model.selected = value;
-          this.move_to_selected(ref);
-        })
+        });
       });
+      this.move_to_closest(ref);
     }
   }
 
   /** Move the draggable to nearest interval when it gets released */
   private move_to_selected(r:iwc.Ref):void {
-      var d = r.view.marker;
-      var pos = this.$(r.view.intervals[r.model.selected]).position().left;
-      d.move(pos);
+    var d = r.view.marker;
+    var pos = this.$(r.view.intervals[r.model.selected]).position().left;
+    d.move(pos);
   }
 
   /** Move the draggable to nearest interval when it gets released */
@@ -110,6 +123,24 @@ export class Slider extends iwc.Base {
       r.model.selected = offset;
       d.move(value);
     });
+  }
+
+  /** Next item */
+  next(r:iwc.Ref):void {
+    r.action((r) => {
+      if (r.model.selected < (r.model.intervals.length)) {
+        ++r.model.selected;
+      }
+    })
+  }
+
+  /** Prev item */
+  prev(r:iwc.Ref):void {
+    r.action((r) => {
+      if (r.model.selected > 0) {
+        --r.model.selected;
+      }
+    })
   }
 }
 
@@ -133,7 +164,9 @@ export class Draggable {
     var width = this._root.parent().width();
     this._bounds = [offset.left, offset.left + width];
     this.track_cursor();
-    this._root.mousedown(() => { this._active = true; });
+    this._root.mousedown(() => {
+      this._active = true;
+    });
   }
 
   public move(pos:number, offset:number = 0):void {

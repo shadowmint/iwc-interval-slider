@@ -18,9 +18,9 @@ define(["require", "exports", 'iwc', 'jquery'], function(require, exports, iwc, 
 
         Slider.prototype.model = function () {
             return {
+                intervals: [],
                 selected: 0,
-                value: null,
-                intervals: []
+                value: null
             };
         };
 
@@ -32,8 +32,20 @@ define(["require", "exports", 'iwc', 'jquery'], function(require, exports, iwc, 
             };
         };
 
+        Slider.prototype.api = function () {
+            var _this = this;
+            return {
+                next: function (r) {
+                    _this.next(r);
+                },
+                prev: function (r) {
+                    _this.prev(r);
+                }
+            };
+        };
+
         Slider.prototype.state = function (ref) {
-            return [ref.model.selected];
+            return [ref.model.selected, ref.view.onchange];
         };
 
         Slider.prototype.update = function (ref) {
@@ -49,12 +61,16 @@ define(["require", "exports", 'iwc', 'jquery'], function(require, exports, iwc, 
             if (ref.view.onchange) {
                 ref.view.onchange(ref.model);
             }
+            this.move_to_selected(ref);
         };
 
         Slider.prototype.instance = function (ref) {
             var _this = this;
             var intervals = ref.view['data-interval'];
-            ref.model.tmp = Math.random();
+            if ((typeof intervals) == 'string') {
+                intervals = [intervals];
+                this.$(ref.root).hide();
+            }
             ref.model.intervals = [];
             ref.view.intervals = [];
             ref.view.markers = $(ref.root).find('.intervals');
@@ -76,9 +92,9 @@ define(["require", "exports", 'iwc', 'jquery'], function(require, exports, iwc, 
                     ref.action(function (ref) {
                         var value = $(e.target).data('value');
                         ref.model.selected = value;
-                        _this.move_to_selected(ref);
                     });
                 });
+                this.move_to_closest(ref);
             }
         };
 
@@ -105,6 +121,22 @@ define(["require", "exports", 'iwc', 'jquery'], function(require, exports, iwc, 
             r.action(function (r) {
                 r.model.selected = offset;
                 d.move(value);
+            });
+        };
+
+        Slider.prototype.next = function (r) {
+            r.action(function (r) {
+                if (r.model.selected < (r.model.intervals.length)) {
+                    ++r.model.selected;
+                }
+            });
+        };
+
+        Slider.prototype.prev = function (r) {
+            r.action(function (r) {
+                if (r.model.selected > 0) {
+                    --r.model.selected;
+                }
             });
         };
         return Slider;

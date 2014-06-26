@@ -95,6 +95,9 @@ declare module IWC {
         /** Return the new dom node content */
         public template(data:any):string;
 
+        /** Return an api for working with refs */
+        public api():any;
+
         /** Return the model for this component */
         public model():any;
 
