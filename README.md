@@ -1,6 +1,6 @@
-# Clock
+# Interval slider
 
-An example clock component using jade & sass.
+A simple slider with a fixed interval set.
 
 ## Build
 
@@ -9,6 +9,3 @@ An example clock component using jade & sass.
 ## Demo
 
     npm run quickstart
-
-NB. Depending on timing you may have to reload the localhost:3008
-address after grunt has started the local dev sever.
