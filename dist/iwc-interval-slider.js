@@ -9,87 +9,19 @@
     __.prototype = b.prototype;
     d.prototype = new __();
   };
-  define(["require", "exports", 'iwc', 'jquery', 'handlebars'], function(require, exports, iwc, jquery, handlebars) {
-    data['jquery'] = jquery;
-    data['handlebars'] = handlebars['default'];
-
-
-
-    var Base = (function() {
-      function Base(name, data) {
-        this._data = data;
-        this.name = name;
-        this._template = data.handlebars.compile(this._data.markup);
-      }
-      Base.prototype.targets = function() {
-        var matches = this._data.jquery('.component--' + this.name);
-        var rtn = [];
-        for (var i = 0; i < matches.length; ++i) {
-          rtn.push(matches[i]);
-        }
-        return rtn;
-      };
-
-      Base.prototype.template = function(data) {
-        console.log(this._template(data));
-        return this._template(data);
-      };
-
-      Base.prototype.model = function() {
-        return {};
-      };
-
-      Base.prototype.view = function() {
-        return {};
-      };
-
-      Base.prototype.state = function(ref) {
-        return [];
-      };
-
-      Base.prototype.update = function(ref) {};
-
-      Base.prototype.instance = function(ref) {};
-
-      Base.prototype.preload = function(ref) {};
-
-      Base.prototype.def = function() {
-        var _this = this;
-        return {
-          name: this.name,
-          model: this.model(),
-          view: this.view(),
-          styles: this._data.styles,
-          targets: function() {
-            return _this.targets();
-          },
-          template: function(data) {
-            return _this.template(data);
-          },
-          instance: function(ref) {
-            _this.instance(ref);
-          },
-          preload: function(ref) {
-            _this.preload(ref);
-          },
-          state: function(ref) {
-            return _this.state(ref);
-          },
-          update: function(ref) {
-            _this.update(ref);
-          }
-        };
-      };
-      return Base;
-    })();
-    exports.Base = Base;
-
+  define(["require", "exports", 'iwc', 'jquery'], function(require, exports, iwc, jquery) {
     var Slider = (function(_super) {
       __extends(Slider, _super);
 
       function Slider() {
         _super.call(this, 'iwc-interval-slider', data);
+        this.$ = jquery;
       }
+      Slider.prototype.targets = function() {
+        var rtn = this.$('.component--iwc-interval-slider');
+        return rtn;
+      };
+
       Slider.prototype.model = function() {
         return {
           selected: 0,
@@ -132,10 +64,9 @@
         ref.model.intervals = [];
         ref.view.intervals = [];
         ref.view.markers = $(ref.root).find('.intervals');
-        console.log(ref);
         ref.view.marker = new Draggable($(ref.root).find('.marker'));
         ref.view.marker.onrelease = function(d) {
-          _this._move_to_closest(d, ref);
+          _this.move_to_closest(ref);
         };
         var count = intervals.length > 0 ? intervals.length : 1;
         var size = 100 / (count - 1);
@@ -149,37 +80,41 @@
           ref.model.intervals.push(intervals[i]);
           $mark.click(function(e) {
             ref.action(function(ref) {
-              console.log(ref.model.tmp);
               var value = $(e.target).data('value');
               ref.model.selected = value;
+              _this.move_to_selected(ref);
             });
           });
         }
       };
 
-      Slider.prototype._move_to_closest = function(d, r) {
+      Slider.prototype.move_to_selected = function(r) {
+        var d = r.view.marker;
+        var pos = this.$(r.view.intervals[r.model.selected]).position().left;
+        d.move(pos);
+      };
+
+      Slider.prototype.move_to_closest = function(r) {
+        var d = r.view.marker;
         var min = -1;
         var offset = -1;
         var value = 0;
-        console.log(r.view.intervals);
         for (var i = 0; i < r.view.intervals.length; ++i) {
           var item = r.view.intervals[i].offset().left;
           var delta = Math.abs(item - d.offset);
           if ((min == -1) || (delta < min)) {
-            value = item;
+            value = r.view.intervals[i].position().left;
             offset = i;
             min = delta;
           }
-          console.log(value, offset, min);
         }
-        console.log('FINAL', value, offset, min);
         r.action(function(r) {
           r.model.selected = offset;
           d.move(value);
         });
       };
       return Slider;
-    })(Base);
+    })(iwc.Base);
     exports.Slider = Slider;
 
     var Draggable = (function() {
@@ -189,6 +124,7 @@
         this._root = target;
         this._active = false;
         this._width = this._root.width();
+        this._rootOffset = $(target).parent().offset().left;
         var offset = this._root.parent().offset();
         var width = this._root.parent().width();
         this._bounds = [offset.left, offset.left + width];
@@ -197,8 +133,11 @@
           _this._active = true;
         });
       }
-      Draggable.prototype.move = function(pos) {
-        this._root.css('left', pos);
+      Draggable.prototype.move = function(pos, offset) {
+        if (typeof offset === "undefined") {
+          offset = 0;
+        }
+        this._root.css('left', pos - offset);
         this.offset = pos;
       };
 
@@ -215,7 +154,7 @@
         $(window).mousemove(function(e) {
           if (_this._active) {
             if ((e.clientX > _this._bounds[0]) && (e.clientX < _this._bounds[1])) {
-              _this.move(e.clientX);
+              _this.move(e.clientX, _this._rootOffset);
             }
           }
         });

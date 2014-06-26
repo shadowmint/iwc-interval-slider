@@ -1,113 +1,23 @@
 /// <reference path="../../defs/jquery/jquery.d.ts"/>
-/// <reference path="../../defs/handlebars/handlebars.d.ts"/>
 /// <reference path="../../defs/iwc/iwc.d.ts"/>
 /// <amd-dependency='jquery'/>
-/// <amd-dependency='handlebars'/>
 import iwc = require('iwc');
 import jquery = require('jquery');
-import handlebars = require('handlebars');
-declare var data;
-data['jquery'] = jquery;
-data['handlebars'] = handlebars['default'];
-
-/** Incoming data interface */
-export interface Data {
-  styles:string;
-  markup:string;
-  jquery:JQueryStatic;
-  handlebars:HandlebarsStatic;
-}
-
-/** Common base for IWC instances using jquery, handlebars */
-export class Base {
-
-  /** Name */
-  public name:string;
-
-  /** Data elements */
-  public _data:Data;
-
-  /** Compiled template */
-  public _template:HandlebarsTemplateDelegate;
-
-  /** Create a component with a given name */
-  constructor(name:string, data:Data) {
-    this._data = data;
-    this.name = name;
-    this._template = data.handlebars.compile(this._data.markup);
-  }
-
-  public targets():HTMLElement[] {
-    var matches = this._data.jquery('.component--' + this.name);
-    var rtn = [];
-    for (var i = 0; i < matches.length; ++i) {
-      rtn.push(matches[i]);
-    }
-    return rtn;
-  }
-
-  public template(data:any):string {
-    console.log(this._template(data));
-    return this._template(data);
-  }
-
-  /** Return the model for this component */
-  public model():any {
-    return {};
-  }
-
-  /** Return the view for this component */
-  public view():any {
-    return {};
-  }
-
-  public state(ref:iwc.Ref):any[] {
-    return [];
-  }
-
-  public update(ref:iwc.Ref):void {
-  }
-
-  public instance(ref:iwc.Ref):void {
-  }
-
-  public preload(ref:iwc.Ref):void {
-  }
-
-  /** Export a definition for this instance */
-  public def():iwc.ComponentDef {
-    return {
-      name: this.name,
-      model: this.model(),
-      view: this.view(),
-      styles: this._data.styles,
-      targets: ():HTMLElement[] => {
-        return this.targets();
-      },
-      template: (data:any) => {
-        return this.template(data);
-      },
-      instance: (ref:iwc.Ref) => {
-        this.instance(ref);
-      },
-      preload: (ref:iwc.Ref) => {
-        this.preload(ref);
-      },
-      state: (ref:iwc.Ref) => {
-        return this.state(ref);
-      },
-      update: (ref:iwc.Ref) => {
-        this.update(ref);
-      }
-    };
-  }
-}
+declare var data:iwc.Data;
 
 /** Slider type */
-export class Slider extends Base {
+export class Slider extends iwc.Base {
+
+  public $:JQueryStatic;
 
   constructor() {
     super('iwc-interval-slider', data);
+      this.$ = jquery;
+  }
+
+  public targets():HTMLElement[] {
+      var rtn = <HTMLElement[]> (<any> this.$('.component--iwc-interval-slider'));
+      return rtn;
   }
 
   public model():any {
@@ -152,9 +62,8 @@ export class Slider extends Base {
     ref.model.intervals = [];
     ref.view.intervals = [];
     ref.view.markers = $(ref.root).find('.intervals');
-    console.log(ref);
     ref.view.marker = new Draggable($(ref.root).find('.marker'));
-    ref.view.marker.onrelease = (d) => { this._move_to_closest(d, ref); };
+    ref.view.marker.onrelease = (d) => { this.move_to_closest(ref); };
     var count = intervals.length > 0 ? intervals.length : 1;
     var size = 100 / (count - 1);
     for (var i = 0; i < intervals.length; ++i) {
@@ -167,31 +76,36 @@ export class Slider extends Base {
       ref.model.intervals.push(intervals[i]);
       $mark.click((e) => {
         ref.action((ref) => {
-          console.log(ref.model.tmp);
           var value = $(e.target).data('value');
           ref.model.selected = value;
+          this.move_to_selected(ref);
         })
       });
     }
   }
 
   /** Move the draggable to nearest interval when it gets released */
-  private _move_to_closest(d:Draggable, r:iwc.Ref):void {
+  private move_to_selected(r:iwc.Ref):void {
+      var d = r.view.marker;
+      var pos = this.$(r.view.intervals[r.model.selected]).position().left;
+      d.move(pos);
+  }
+
+  /** Move the draggable to nearest interval when it gets released */
+  private move_to_closest(r:iwc.Ref):void {
+    var d = r.view.marker;
     var min = -1;
     var offset = -1;
     var value = 0;
-    console.log(r.view.intervals);
     for (var i = 0; i < r.view.intervals.length; ++i) {
       var item = r.view.intervals[i].offset().left;
       var delta = Math.abs(item - d.offset);
       if ((min == -1) || (delta < min)) {
-        value = item;
+        value = r.view.intervals[i].position().left;
         offset = i;
         min = delta;
       }
-      console.log(value, offset, min);
     }
-    console.log('FINAL', value, offset, min);
     r.action((r) => {
       r.model.selected = offset;
       d.move(value);
@@ -204,6 +118,7 @@ export class Draggable {
 
   private _root:any;
   private _active:boolean;
+  private _rootOffset:number;
   private _bounds:number[];
   private _width:number;
   public offset:number;
@@ -213,6 +128,7 @@ export class Draggable {
     this._root = target;
     this._active = false;
     this._width = this._root.width();
+    this._rootOffset = $(target).parent().offset().left;
     var offset = this._root.parent().offset();
     var width = this._root.parent().width();
     this._bounds = [offset.left, offset.left + width];
@@ -220,8 +136,8 @@ export class Draggable {
     this._root.mousedown(() => { this._active = true; });
   }
 
-  public move(pos:number):void {
-    this._root.css('left', pos);
+  public move(pos:number, offset:number = 0):void {
+    this._root.css('left', pos - offset);
     this.offset = pos;
   }
 
@@ -237,7 +153,7 @@ export class Draggable {
     $(window).mousemove((e) => {
       if (this._active) {
         if ((e.clientX > this._bounds[0]) && (e.clientX < this._bounds[1])) {
-          this.move(e.clientX);
+          this.move(e.clientX, this._rootOffset);
         }
       }
     });
