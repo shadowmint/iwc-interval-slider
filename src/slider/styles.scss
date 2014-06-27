@@ -1,6 +1,10 @@
-$interval_width: 4px;
-$interval_height: 15px;
+$interval_width: 10px;
+$interval_height: 10px;
+$marker_height: 20px;
 $base_height: 2px;
+
+$color_bg: #dfdfdf;
+$color_active: #af576b;
 
 .component--iwc-interval-slider {
   position: relative;
@@ -11,23 +15,30 @@ $base_height: 2px;
       width: $interval_width;
       margin-left: -$interval_width / 2;
       height: $interval_height;
-      background: #000;
+      background: $color_bg;
+      border-radius: $interval_width;
+      z-index: 1;
       &.active {
-        background: #f00;
+        background: $color_active;
       }
     }
   }
   .marker {
-    height: 20px;
-    width: 20px;
+    height: $marker_height;
+    width: $marker_height;
     background: #efefef;
-    border: 1px solid #000;
+    border: 1px solid #cfcfcf;
     margin-left: -10px;
     position: absolute;
+    top: -$marker-height / 4;
+    border-radius: 4px;
+    z-index: 2;
   }
   .base {
-    height: $interval_height - $base_height;
-    border-bottom: $base_height solid #000;
+    position: relative;
+    top: $interval_width / 2 - $base_height / 2;
+    background: $color_bg;
+    height: $base_height;
     width: 100%;
   }
 }
