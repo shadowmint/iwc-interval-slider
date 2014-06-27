@@ -10,6 +10,7 @@ export declare class Slider extends iwc.Base {
     public state(ref: iwc.Ref): any[];
     public update(ref: iwc.Ref): void;
     public instance(ref: iwc.Ref): void;
+    private percent_offset(r, i);
     private move_to_selected(r);
     private move_to_closest(r);
     public next(r: iwc.Ref): void;
@@ -24,6 +25,7 @@ export declare class Draggable {
     public offset: number;
     public onrelease: (d: Draggable) => void;
     constructor(target: any);
-    public move(pos: number, offset?: number): void;
+    private resize();
+    public move(pos: any, offset?: number): void;
     public track_cursor(): void;
 }

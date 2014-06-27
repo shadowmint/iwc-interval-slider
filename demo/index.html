@@ -8,9 +8,36 @@
     section {
         margin: 30px;
     }
+    .component--iwc-interval-slider {
+        margin-left: 10px;
+    }
+    body {
+        font-family: sans-serif;
+        font-size: 10px;
+    }
+    h1 {
+        font-size: 2em;
+        margin-bottom: 15px;
+        margin-top: 40px;
+    }
+    .mobile {
+        text-align: center;
+        width: 100%;
+    }
+    .mobile .component--iwc-interval-slider {
+        display: inline-block;
+        width: 50%;
+    }
 </style>
 
+<div id="foo1"></div>
+<div id="foo2"></div>
+<div id="foo3"></div>
+<div id="foo4"></div>
+<div id="foo5"></div>
+<div id="foo6"></div>
 <section style="width: 600px">
+    <h1> Basic example </h1>
     <div class="component--iwc-interval-slider">
         <div data-interval="1"></div>
         <div data-interval="1"></div>
@@ -19,20 +46,40 @@
     </div>
 </section>
 
-<section style="width: 800px">
+<section style="width: 600px">
+    <h1> Small example </h1>
     <div class="component--iwc-interval-slider">
         <div data-interval="1"></div>
-        <div data-interval="1"></div>
         <div data-interval="2"></div>
-        <div data-interval="4"></div>
-        <div data-interval="2"></div>
-        <div data-interval="4"></div>
-        <div data-interval="2"></div>
-        <div data-interval="4"></div>
+    </div>
+</section>
+
+<section>
+    <h1> Dynamic size example </h1>
+    <div class="mobile">
+        <div class="component--iwc-interval-slider">
+            <div data-interval="1"></div>
+            <div data-interval="1"></div>
+            <div data-interval="2"></div>
+            <div data-interval="4"></div>
+            <div data-interval="2"></div>
+            <div data-interval="4"></div>
+            <div data-interval="2"></div>
+            <div data-interval="4"></div>
+        </div>
     </div>
 </section>
 
 <section style="width: 400px">
+    <h1> Javascript bindings example </h1>
+    <p>
+        Selected value: <span id="value"></span>
+    </p>
+    <p>
+        <!-- See app.js for bindings -->
+        <a href="#" id="prev">prev</a>
+        <a href="#" id="next">next</a>
+    </p>
     <div id="cmp" class="component--iwc-interval-slider">
         <div data-interval="1"></div>
         <div data-interval="2"></div>
@@ -44,7 +91,6 @@
 </section>
 
 <section>
-    Selected value: <span id="value"></span>
 </section>
 <script data-main="app" src="/bower_components/requirejs/require.js"></script>
 </body>

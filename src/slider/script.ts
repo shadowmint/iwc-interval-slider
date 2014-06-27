@@ -74,34 +74,41 @@ export class Slider extends iwc.Base {
     ref.view.intervals = [];
     ref.view.markers = $(ref.root).find('.intervals');
     ref.view.marker = new Draggable($(ref.root).find('.marker'));
-    ref.view.marker.onrelease = (d) => {
-      this.move_to_closest(ref);
-    };
-    var count = intervals.length > 0 ? intervals.length : 1;
-    var size = 100 / (count - 1);
+    ref.view.marker.onrelease = () => { this.move_to_closest(ref); };
     for (var i = 0; i < intervals.length; ++i) {
       var $mark = $('<div></div>');
       $mark.attr('data-value', i);
       $mark.addClass('interval');
-      $mark.css('left', i * size + "%");
+      $mark.css('left', this.percent_offset(ref, i));
       ref.view.markers.append($mark);
       ref.view.intervals.push($mark);
       ref.model.intervals.push(intervals[i]);
-      $mark.click((e) => {
-        ref.action((ref) => {
-          var value = $(e.target).data('value');
-          ref.model.selected = value;
-        });
-      });
+      ((m) => {
+        var action = (e) => {
+          ref.action((ref) => {
+            var value = $(m).data('value');
+            ref.model.selected = value;
+          });
+        };
+        m.click(action);
+        m.bind('touchstart', action);
+      })($mark);
       this.move_to_closest(ref);
     }
+  }
+
+  /** Calculate the % offset for an index */
+  private percent_offset(r:iwc.Ref, i:number):string {
+    var intervals = r.view['data-interval'];
+    var count = intervals.length > 0 ? intervals.length : 1;
+    var size = 100 / (count - 1);
+    return i * size + '%';
   }
 
   /** Move the draggable to nearest interval when it gets released */
   private move_to_selected(r:iwc.Ref):void {
     var d = r.view.marker;
-    var pos = this.$(r.view.intervals[r.model.selected]).position().left;
-    d.move(pos);
+    d.move(this.percent_offset(r, r.model.selected));
   }
 
   /** Move the draggable to nearest interval when it gets released */
@@ -109,19 +116,17 @@ export class Slider extends iwc.Base {
     var d = r.view.marker;
     var min = -1;
     var offset = -1;
-    var value = 0;
     for (var i = 0; i < r.view.intervals.length; ++i) {
       var item = r.view.intervals[i].offset().left;
       var delta = Math.abs(item - d.offset);
       if ((min == -1) || (delta < min)) {
-        value = r.view.intervals[i].position().left;
         offset = i;
         min = delta;
       }
     }
     r.action((r) => {
       r.model.selected = offset;
-      d.move(value);
+      this.move_to_selected(r);
     });
   }
 
@@ -158,38 +163,61 @@ export class Draggable {
   constructor(target:any) {
     this._root = target;
     this._active = false;
+    this.resize();
+    this.track_cursor();
+  }
+
+  private resize():void {
     this._width = this._root.width();
-    this._rootOffset = $(target).parent().offset().left;
+    this._rootOffset = $(this._root).parent().offset().left;
     var offset = this._root.parent().offset();
     var width = this._root.parent().width();
     this._bounds = [offset.left, offset.left + width];
-    this.track_cursor();
-    this._root.mousedown(() => {
-      this._active = true;
-    });
   }
 
-  public move(pos:number, offset:number = 0):void {
-    this._root.css('left', pos - offset);
-    this.offset = pos;
+  public move(pos:any, offset:number = null):void {
+    if (offset === null) {
+      this._root.css('left', pos);
+    }
+    else {
+      this._root.css('left', pos - offset);
+    }
+    this.offset = $(this._root).offset().left;
   }
 
   public track_cursor():void {
-    $(window).mouseup((e) => {
+    var start = (e) => {
+        this._active = true;
+        e.preventDefault();
+    };
+    $(this._root).bind('touchstart', start);
+    $(this._root).bind('mousedown', start);
+
+    var stop = (e) => {
       if (this._active) {
         this._active = false;
         if (this.onrelease) {
           this.onrelease(this);
         }
       }
-    });
-    $(window).mousemove((e) => {
+      e.preventDefault();
+    };
+    $(window).bind('mouseup', stop);
+    $(window).bind('touchend', stop);
+
+    var action = (e:any) => {
       if (this._active) {
+          if (!e.clientX) {
+             e = e.originalEvent.touches.item(0);
+          }
         if ((e.clientX > this._bounds[0]) && (e.clientX < this._bounds[1])) {
+          this.resize();
           this.move(e.clientX, this._rootOffset);
         }
       }
-    });
+    };
+    $(window).bind('mousemove', action);
+    $(window).bind('touchmove', action);
   }
 }
 
