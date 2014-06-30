@@ -23,7 +23,7 @@ export class Slider extends iwc.Base {
   public model():any {
     return {
       intervals: [],
-      selected: 0,
+      selected: null,
       value: null
     };
   }
@@ -93,8 +93,8 @@ export class Slider extends iwc.Base {
         m.click(action);
         m.bind('touchstart', action);
       })($mark);
-      this.move_to_closest(ref);
     }
+    //this.move_to_closest(ref);
   }
 
   /** Calculate the % offset for an index */
@@ -210,8 +210,8 @@ export class Draggable {
           if (!e.clientX) {
              e = e.originalEvent.touches.item(0);
           }
+        this.resize();
         if ((e.clientX > this._bounds[0]) && (e.clientX < this._bounds[1])) {
-          this.resize();
           this.move(e.clientX, this._rootOffset);
         }
       }
