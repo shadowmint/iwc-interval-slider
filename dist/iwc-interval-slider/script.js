@@ -19,7 +19,7 @@ define(["require", "exports", 'iwc', 'jquery'], function(require, exports, iwc, 
         Slider.prototype.model = function () {
             return {
                 intervals: [],
-                selected: 0,
+                selected: null,
                 value: null
             };
         };
@@ -96,7 +96,6 @@ define(["require", "exports", 'iwc', 'jquery'], function(require, exports, iwc, 
                     m.click(action);
                     m.bind('touchstart', action);
                 })($mark);
-                this.move_to_closest(ref);
             }
         };
 
@@ -202,8 +201,8 @@ define(["require", "exports", 'iwc', 'jquery'], function(require, exports, iwc, 
                     if (!e.clientX) {
                         e = e.originalEvent.touches.item(0);
                     }
+                    _this.resize();
                     if ((e.clientX > _this._bounds[0]) && (e.clientX < _this._bounds[1])) {
-                        _this.resize();
                         _this.move(e.clientX, _this._rootOffset);
                     }
                 }

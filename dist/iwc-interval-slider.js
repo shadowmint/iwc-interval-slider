@@ -25,7 +25,7 @@
       Slider.prototype.model = function() {
         return {
           intervals: [],
-          selected: 0,
+          selected: null,
           value: null
         };
       };
@@ -102,7 +102,6 @@
             m.click(action);
             m.bind('touchstart', action);
           })($mark);
-          this.move_to_closest(ref);
         }
       };
 
@@ -210,8 +209,8 @@
             if (!e.clientX) {
               e = e.originalEvent.touches.item(0);
             }
+            _this.resize();
             if ((e.clientX > _this._bounds[0]) && (e.clientX < _this._bounds[1])) {
-              _this.resize();
               _this.move(e.clientX, _this._rootOffset);
             }
           }
