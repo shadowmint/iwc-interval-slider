@@ -1,4 +1,5 @@
 *.ts.js
+*.css.map
 .baseDir*
 *.ts.js
 *.js.map

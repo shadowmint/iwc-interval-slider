@@ -1,36 +1,27 @@
 require.config({
     paths: {
         iwc: '/bower_components/iwcjs/dist/iwc',
-        handlebars: '/bower_components/handlebars/handlebars.amd',
         jquery: '/bower_components/jquery/dist/jquery'
     }
 });
 
-var slider = function(action) {
-    var cmp = $('#cmp')[0];
-    window.components.iwc['interval-slider'](cmp, action);
-};
-
-require(['../dist/iwc-interval-slider', 'jquery'], function () {
-
-    // On change event
-    slider(function(r) {
-        r.view.onchange = function (r) {
-            $('#value').text(r.value);
-        }
-    });
+require(['iwc', '../dist/iwc-interval-slider', 'jquery'], function (iwc) {
 
     // Prev / next bindings
     $('#next').bind('touchstart click', function(e) {
         e.preventDefault();
-       slider(function(r) {
-           r.api.next(r);
-       });
+        iwc.components.query($('#cmp')).next();
     });
     $('#prev').bind('touchstart click', function(e) {
         e.preventDefault();
-        slider(function(r) {
-            r.api.prev(r);
+        iwc.components.query($('#cmp')).prev();
+    });
+
+    // On change event
+    iwc.load(document.body, function() {
+        $('#value').html(iwc.components.query($('#cmp')).value);
+        iwc.components.query($('#cmp')).change(function() {
+            $('#value').html(this.value);
         });
     });
 });

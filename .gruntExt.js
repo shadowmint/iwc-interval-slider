@@ -7,7 +7,7 @@ var config = {};
 var tasks = [];
 
 /* Are we in debug mode? */
-var debug = true;
+var debug = false;
 
 /* Trace debug messages */
 function trace(msg) {

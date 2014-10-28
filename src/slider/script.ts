@@ -1,152 +1,138 @@
+/// <reference path="../../bower_components/iwcjs/defs/iwc.d.ts"/>
 /// <reference path="../../defs/jquery/jquery.d.ts"/>
-/// <reference path="../../defs/iwc/iwc.d.ts"/>
 /// <amd-dependency='jquery'/>
+import $ = require('jquery');
 import iwc = require('iwc');
-import jquery = require('jquery');
-declare var data:iwc.Data;
+declare var data;
 
 /** Slider type */
-export class Slider extends iwc.Base {
+export class Slider {
 
-  public $:JQueryStatic;
+    /** Component root node */
+    public root:any;
 
-  constructor() {
-    super('iwc-interval-slider', data);
-    this.$ = jquery;
-  }
+    /** The component data model */
+    public data:any;
 
-  public targets():HTMLElement[] {
-    var rtn = <HTMLElement[]> (<any> this.$('.component--iwc-interval-slider'));
-    return rtn;
-  }
+    /** The current index */
+    public offset:number;
 
-  public model():any {
-    return {
-      intervals: [],
-      selected: null,
-      value: null
-    };
-  }
+    /** The current value */
+    public value:string;
 
-  public view():any {
-    return {
-      intervals: [],
-      markers: null,
-      onchange: null
-    };
-  }
+    /** On change callback */
+    private _change:{():void}[] = [];
 
-  public api():any {
-    return {
-      next: (r) => { this.next(r); },
-      prev: (r) => { this.prev(r); }
+    /** The set of interval DOM nodes */
+    private _intervals:any[] = [];
+
+    /** Raw template for this component */
+    public content():any {
+        return data.markup;
     }
-  }
 
-  public state(ref:iwc.Ref):any[] {
-    return [ref.model.selected, ref.view.onchange];
-  }
+    /** Run on start up */
+    public init():void {
 
-  public update(ref:iwc.Ref):void {
-    var intervals = ref.view.intervals;
-    for (var i = 0; i < intervals.length; ++i) {
-      if (ref.model.selected == i) {
-        intervals[i].addClass('active');
-        ref.model.value = ref.model.intervals[i];
-      }
-      else {
-        intervals[i].removeClass('active');
-      }
-    }
-    if (ref.view.onchange) {
-      ref.view.onchange(ref.model);
-    }
-    this.move_to_selected(ref);
-  }
+        // Add intervals
+        var $intervals = $(this.root).find('.intervals');
+        for (var i = 0; i < this.data.interval.length; ++i) {
+            var $mark = $('<div></div>').attr('data-value', i).addClass('interval');
+            $mark.css('left', this._offset(i));
+            $intervals.append($mark);
+            this._intervals.push($mark);
+        }
 
-  public instance(ref:iwc.Ref):void {
-    var intervals = ref.view['data-interval'];
-    if ((typeof intervals) == 'string') {
-      intervals = [intervals];
-      this.$(ref.root).hide();
-    }
-    ref.model.intervals = [];
-    ref.view.intervals = [];
-    ref.view.markers = $(ref.root).find('.intervals');
-    ref.view.marker = new Draggable($(ref.root).find('.marker'));
-    ref.view.marker.onrelease = () => { this.move_to_closest(ref); };
-    for (var i = 0; i < intervals.length; ++i) {
-      var $mark = $('<div></div>');
-      $mark.attr('data-value', i);
-      $mark.addClass('interval');
-      $mark.css('left', this.percent_offset(ref, i));
-      ref.view.markers.append($mark);
-      ref.view.intervals.push($mark);
-      ref.model.intervals.push(intervals[i]);
-      ((m) => {
-        var action = (e) => {
-          ref.action((ref) => {
-            var value = $(m).data('value');
-            ref.model.selected = value;
-          });
+        // Make the marker draggable
+        var $marker = $(this.root).find('.marker');
+        var drag = new Draggable($marker);
+        drag.onrelease = () => {
+            console.log(this);
+            this.move();
         };
-        m.click(action);
-        m.bind('touchstart', action);
-      })($mark);
+
+        // Set initial state
+        this.move(0);
     }
-    //this.move_to_closest(ref);
-  }
 
-  /** Calculate the % offset for an index */
-  private percent_offset(r:iwc.Ref, i:number):string {
-    var intervals = r.view['data-interval'];
-    var count = intervals.length > 0 ? intervals.length : 1;
-    var size = 100 / (count - 1);
-    return i * size + '%';
-  }
-
-  /** Move the draggable to nearest interval when it gets released */
-  private move_to_selected(r:iwc.Ref):void {
-    var d = r.view.marker;
-    d.move(this.percent_offset(r, r.model.selected));
-  }
-
-  /** Move the draggable to nearest interval when it gets released */
-  private move_to_closest(r:iwc.Ref):void {
-    var d = r.view.marker;
-    var min = -1;
-    var offset = -1;
-    for (var i = 0; i < r.view.intervals.length; ++i) {
-      var item = r.view.intervals[i].offset().left;
-      var delta = Math.abs(item - d.offset);
-      if ((min == -1) || (delta < min)) {
-        offset = i;
-        min = delta;
-      }
+    /** Move the marker to a specific interval or closest if null */
+    public move(offset:number = -1):void {
+        var $marker = $(this.root).find('.marker');
+        if (offset == -1) {
+            var min = -1;
+            var p = $marker.offset().left;
+            for (var i = 0; i < this._intervals.length; ++i) {
+                var delta = Math.abs(p - $(this._intervals[i]).offset().left);
+                if ((min == -1) || (delta < min)) {
+                    offset = i;
+                    min = delta;
+                }
+            }
+        }
+        if (offset >= this._intervals.length) {
+            offset = this._intervals[this._intervals.length - 1];
+        }
+        if (offset < 0) {
+            offset = 0;
+        }
+        if (this.offset != offset) {
+            this.offset = offset;
+            this.value = $(this._intervals[offset]).attr('data-value');
+            this._trigger();
+        }
+        $marker.css('left', this._offset(this.offset));
     }
-    r.action((r) => {
-      r.model.selected = offset;
-      this.move_to_selected(r);
-    });
-  }
 
-  /** Next item */
-  next(r:iwc.Ref):void {
-    r.action((r) => {
-      if (r.model.selected < (r.model.intervals.length)) {
-        ++r.model.selected;
-      }
-    })
-  }
+    /** Bind a callback to invoke when the value changes on this object */
+    public change(callback:{():void}):void {
+        this._change.push(callback)
+    }
 
-  /** Prev item */
-  prev(r:iwc.Ref):void {
-    r.action((r) => {
-      if (r.model.selected > 0) {
-        --r.model.selected;
-      }
-    })
-  }
+    /** Next item */
+    private next():void {
+        this.move(this.offset + 1);
+    }
+
+    /** Previous item */
+    public prev():void {
+        this.move(this.offset - 1);
+    }
+
+    /** Trigger on change callbacks */
+    private _trigger():void {
+        var schedule = (i:number) => {
+            setTimeout(() => {
+                this._change[i].call(this);
+            }, 1);
+        };
+        for (var i = 0; i < this._change.length; ++i) {
+            schedule(i);
+        }
+    }
+
+    /** Calculate the % offset for an index */
+    private _offset(i:number):string {
+        var count = this.data.interval.length > 0 ? this.data.interval.length : 1;
+        var size = 100 / (count - 1);
+        return i * size + '%';
+    }
+}
+
+/** Slider factory */
+export class SliderFactory {
+
+    /** Inline styles */
+    public stylesheet:string = data.styles;
+
+    /** Find root nodes */
+    public query(root:any):any {
+        return $(root).find('.component--iwc-interval-slider');
+    }
+
+    /** New instance */
+    public factory():any {
+        return new Slider();
+    }
 }
 
 /** Draggable items */
@@ -222,4 +208,4 @@ export class Draggable {
 }
 
 // Actually register
-iwc.component(new Slider().def());
+iwc.register(new SliderFactory());

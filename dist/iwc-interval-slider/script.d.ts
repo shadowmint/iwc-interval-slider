@@ -1,20 +1,25 @@
+/// <reference path="../../bower_components/iwcjs/defs/iwc.d.ts" />
 /// <reference path="../../defs/jquery/jquery.d.ts" />
-/// <reference path="../../defs/iwc/iwc.d.ts" />
-export declare class Slider extends iwc.Base {
-    public $: JQueryStatic;
-    constructor();
-    public targets(): HTMLElement[];
-    public model(): any;
-    public view(): any;
-    public api(): any;
-    public state(ref: iwc.Ref): any[];
-    public update(ref: iwc.Ref): void;
-    public instance(ref: iwc.Ref): void;
-    private percent_offset(r, i);
-    private move_to_selected(r);
-    private move_to_closest(r);
-    public next(r: iwc.Ref): void;
-    public prev(r: iwc.Ref): void;
+export declare class Slider {
+    public root: any;
+    public data: any;
+    public offset: number;
+    public value: string;
+    private _change;
+    private _intervals;
+    public content(): any;
+    public init(): void;
+    public move(offset?: number): void;
+    public change(callback: () => void): void;
+    private next();
+    public prev(): void;
+    private _trigger();
+    private _offset(i);
+}
+export declare class SliderFactory {
+    public stylesheet: string;
+    public query(root: any): any;
+    public factory(): any;
 }
 export declare class Draggable {
     private _root;

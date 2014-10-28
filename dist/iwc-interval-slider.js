@@ -1,159 +1,111 @@
 (function(data) {
-  var __extends = this.__extends || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p)) d[p] = b[p];
-
-    function __() {
-      this.constructor = d;
-    }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-  };
-  define(["require", "exports", 'iwc', 'jquery'], function(require, exports, iwc, jquery) {
-    var Slider = (function(_super) {
-      __extends(Slider, _super);
-
+  define(["require", "exports", 'jquery', 'iwc'], function(require, exports, $, iwc) {
+    var Slider = (function() {
       function Slider() {
-        _super.call(this, 'iwc-interval-slider', data);
-        this.$ = jquery;
+        this._change = [];
+        this._intervals = [];
       }
-      Slider.prototype.targets = function() {
-        var rtn = this.$('.component--iwc-interval-slider');
-        return rtn;
+      Slider.prototype.content = function() {
+        return data.markup;
       };
 
-      Slider.prototype.model = function() {
-        return {
-          intervals: [],
-          selected: null,
-          value: null
-        };
-      };
-
-      Slider.prototype.view = function() {
-        return {
-          intervals: [],
-          markers: null,
-          onchange: null
-        };
-      };
-
-      Slider.prototype.api = function() {
+      Slider.prototype.init = function() {
         var _this = this;
-        return {
-          next: function(r) {
-            _this.next(r);
-          },
-          prev: function(r) {
-            _this.prev(r);
-          }
+        var $intervals = $(this.root).find('.intervals');
+        for (var i = 0; i < this.data.interval.length; ++i) {
+          var $mark = $('<div></div>').attr('data-value', i).addClass('interval');
+          $mark.css('left', this._offset(i));
+          $intervals.append($mark);
+          this._intervals.push($mark);
+        }
+
+        var $marker = $(this.root).find('.marker');
+        var drag = new Draggable($marker);
+        drag.onrelease = function() {
+          console.log(_this);
+          _this.move();
         };
+
+        this.move(0);
       };
 
-      Slider.prototype.state = function(ref) {
-        return [ref.model.selected, ref.view.onchange];
-      };
-
-      Slider.prototype.update = function(ref) {
-        var intervals = ref.view.intervals;
-        for (var i = 0; i < intervals.length; ++i) {
-          if (ref.model.selected == i) {
-            intervals[i].addClass('active');
-            ref.model.value = ref.model.intervals[i];
-          } else {
-            intervals[i].removeClass('active');
+      Slider.prototype.move = function(offset) {
+        if (typeof offset === "undefined") {
+          offset = -1;
+        }
+        var $marker = $(this.root).find('.marker');
+        if (offset == -1) {
+          var min = -1;
+          var p = $marker.offset().left;
+          for (var i = 0; i < this._intervals.length; ++i) {
+            var delta = Math.abs(p - $(this._intervals[i]).offset().left);
+            if ((min == -1) || (delta < min)) {
+              offset = i;
+              min = delta;
+            }
           }
         }
-        if (ref.view.onchange) {
-          ref.view.onchange(ref.model);
+        if (offset >= this._intervals.length) {
+          offset = this._intervals[this._intervals.length - 1];
         }
-        this.move_to_selected(ref);
+        if (offset < 0) {
+          offset = 0;
+        }
+        if (this.offset != offset) {
+          this.offset = offset;
+          this.value = $(this._intervals[offset]).attr('data-value');
+          this._trigger();
+        }
+        $marker.css('left', this._offset(this.offset));
       };
 
-      Slider.prototype.instance = function(ref) {
+      Slider.prototype.change = function(callback) {
+        this._change.push(callback);
+      };
+
+      Slider.prototype.next = function() {
+        this.move(this.offset + 1);
+      };
+
+      Slider.prototype.prev = function() {
+        this.move(this.offset - 1);
+      };
+
+      Slider.prototype._trigger = function() {
         var _this = this;
-        var intervals = ref.view['data-interval'];
-        if ((typeof intervals) == 'string') {
-          intervals = [intervals];
-          this.$(ref.root).hide();
-        }
-        ref.model.intervals = [];
-        ref.view.intervals = [];
-        ref.view.markers = $(ref.root).find('.intervals');
-        ref.view.marker = new Draggable($(ref.root).find('.marker'));
-        ref.view.marker.onrelease = function() {
-          _this.move_to_closest(ref);
+        var schedule = function(i) {
+          setTimeout(function() {
+            _this._change[i].call(_this);
+          }, 1);
         };
-        for (var i = 0; i < intervals.length; ++i) {
-          var $mark = $('<div></div>');
-          $mark.attr('data-value', i);
-          $mark.addClass('interval');
-          $mark.css('left', this.percent_offset(ref, i));
-          ref.view.markers.append($mark);
-          ref.view.intervals.push($mark);
-          ref.model.intervals.push(intervals[i]);
-          (function(m) {
-            var action = function(e) {
-              ref.action(function(ref) {
-                var value = $(m).data('value');
-                ref.model.selected = value;
-              });
-            };
-            m.click(action);
-            m.bind('touchstart', action);
-          })($mark);
+        for (var i = 0; i < this._change.length; ++i) {
+          schedule(i);
         }
       };
 
-      Slider.prototype.percent_offset = function(r, i) {
-        var intervals = r.view['data-interval'];
-        var count = intervals.length > 0 ? intervals.length : 1;
+      Slider.prototype._offset = function(i) {
+        var count = this.data.interval.length > 0 ? this.data.interval.length : 1;
         var size = 100 / (count - 1);
         return i * size + '%';
       };
-
-      Slider.prototype.move_to_selected = function(r) {
-        var d = r.view.marker;
-        d.move(this.percent_offset(r, r.model.selected));
-      };
-
-      Slider.prototype.move_to_closest = function(r) {
-        var _this = this;
-        var d = r.view.marker;
-        var min = -1;
-        var offset = -1;
-        for (var i = 0; i < r.view.intervals.length; ++i) {
-          var item = r.view.intervals[i].offset().left;
-          var delta = Math.abs(item - d.offset);
-          if ((min == -1) || (delta < min)) {
-            offset = i;
-            min = delta;
-          }
-        }
-        r.action(function(r) {
-          r.model.selected = offset;
-          _this.move_to_selected(r);
-        });
-      };
-
-      Slider.prototype.next = function(r) {
-        r.action(function(r) {
-          if (r.model.selected < (r.model.intervals.length)) {
-            ++r.model.selected;
-          }
-        });
-      };
-
-      Slider.prototype.prev = function(r) {
-        r.action(function(r) {
-          if (r.model.selected > 0) {
-            --r.model.selected;
-          }
-        });
-      };
       return Slider;
-    })(iwc.Base);
+    })();
     exports.Slider = Slider;
+
+    var SliderFactory = (function() {
+      function SliderFactory() {
+        this.stylesheet = data.styles;
+      }
+      SliderFactory.prototype.query = function(root) {
+        return $(root).find('.component--iwc-interval-slider');
+      };
+
+      SliderFactory.prototype.factory = function() {
+        return new Slider();
+      };
+      return SliderFactory;
+    })();
+    exports.SliderFactory = SliderFactory;
 
     var Draggable = (function() {
       function Draggable(target) {
@@ -222,12 +174,12 @@
     })();
     exports.Draggable = Draggable;
 
-    iwc.component(new Slider().def());
+    iwc.register(new SliderFactory());
   });
   //# sourceMappingURL=script.js.map
 
 })({
-  styles: ".component--iwc-interval-slider {\n  position: relative; }\n  .component--iwc-interval-slider .intervals {\n    position: relative; }\n    .component--iwc-interval-slider .intervals .interval {\n      position: absolute;\n      width: 10px;\n      margin-left: -5px;\n      height: 10px;\n      background: #dfdfdf;\n      border-radius: 10px;\n      z-index: 1; }\n      .component--iwc-interval-slider .intervals .interval.active {\n        background: #af576b; }\n  .component--iwc-interval-slider .marker {\n    height: 20px;\n    width: 20px;\n    background: #efefef;\n    border: 1px solid #cfcfcf;\n    margin-left: -10px;\n    position: absolute;\n    top: -5px;\n    border-radius: 4px;\n    z-index: 2; }\n  .component--iwc-interval-slider .base {\n    position: relative;\n    top: 4px;\n    background: #dfdfdf;\n    height: 2px;\n    width: 100%; }\n",
+  styles: ".component--iwc-interval-slider {\n  position: relative; }\n  .component--iwc-interval-slider .intervals {\n    position: relative; }\n    .component--iwc-interval-slider .intervals .interval {\n      position: absolute;\n      width: 10px;\n      margin-left: -5px;\n      height: 10px;\n      background: #dfdfdf;\n      border-radius: 10px;\n      z-index: 1; }\n      .component--iwc-interval-slider .intervals .interval.active {\n        background: #af576b; }\n  .component--iwc-interval-slider .marker {\n    height: 20px;\n    width: 20px;\n    background: #efefef;\n    border: 1px solid #cfcfcf;\n    margin-left: -10px;\n    position: absolute;\n    top: -5px;\n    border-radius: 4px;\n    z-index: 2; }\n  .component--iwc-interval-slider .base {\n    position: relative;\n    top: 4px;\n    background: #dfdfdf;\n    height: 2px;\n    width: 100%; }\n\n/*# sourceMappingURL=styles.css.map */\n",
   markup: "<div><div class=\"marker\"></div><div class=\"intervals\"></div><div class=\"base\"></div></div>",
   resources: {}
 });
