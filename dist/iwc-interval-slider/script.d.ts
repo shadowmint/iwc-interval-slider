@@ -1,36 +1,60 @@
 /// <reference path="../../bower_components/iwcjs/defs/iwc.d.ts" />
 /// <reference path="../../defs/jquery/jquery.d.ts" />
+/** Slider type */
 export declare class Slider {
-    public root: any;
-    public data: any;
-    public offset: number;
-    public value: string;
+    /** Component root node */
+    root: any;
+    /** The component data model */
+    data: any;
+    /** The current index */
+    offset: number;
+    /** The current value */
+    value: string;
+    /** On change callback */
     private _change;
+    /** The set of interval DOM nodes */
     private _intervals;
-    public content(): any;
-    public init(): void;
-    public move(offset?: number): void;
-    public change(callback: () => void): void;
+    /** Raw template for this component */
+    content(): any;
+    /** Run on start up */
+    init(): void;
+    /** Move the marker to a specific interval or closest if null */
+    move(offset?: number): void;
+    /** Bind a callback to invoke when the value changes on this object */
+    change(callback: {
+        (): void;
+    }): void;
+    /** Next item */
     private next();
-    public prev(): void;
+    /** Previous item */
+    prev(): void;
+    /** Trigger on change callbacks */
     private _trigger();
+    /** Calculate the % offset for an index */
     private _offset(i);
 }
+/** Slider factory */
 export declare class SliderFactory {
-    public stylesheet: string;
-    public query(root: any): any;
-    public factory(): any;
+    /** Inline styles */
+    stylesheet: string;
+    /** Find root nodes */
+    query(root: any): any;
+    /** New instance */
+    factory(): any;
 }
+/** Draggable items */
 export declare class Draggable {
     private _root;
     private _active;
     private _rootOffset;
     private _bounds;
     private _width;
-    public offset: number;
-    public onrelease: (d: Draggable) => void;
+    offset: number;
+    onrelease: {
+        (d: Draggable): void;
+    };
     constructor(target: any);
     private resize();
-    public move(pos: any, offset?: number): void;
-    public track_cursor(): void;
+    move(pos: any, offset?: number): void;
+    track_cursor(): void;
 }

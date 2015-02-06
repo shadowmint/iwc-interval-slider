@@ -1,16 +1,21 @@
 (function(data) {
   define(["require", "exports", 'jquery', 'iwc'], function(require, exports, $, iwc) {
+    /** Slider type */
     var Slider = (function() {
       function Slider() {
-        this._change = [];
-        this._intervals = [];
-      }
+          /** On change callback */
+          this._change = [];
+          /** The set of interval DOM nodes */
+          this._intervals = [];
+        }
+        /** Raw template for this component */
       Slider.prototype.content = function() {
         return data.markup;
       };
-
+      /** Run on start up */
       Slider.prototype.init = function() {
         var _this = this;
+        // Add intervals
         var $intervals = $(this.root).find('.intervals');
         for (var i = 0; i < this.data.interval.length; ++i) {
           var $mark = $('<div></div>').attr('data-value', i).addClass('interval');
@@ -18,19 +23,19 @@
           $intervals.append($mark);
           this._intervals.push($mark);
         }
-
+        // Make the marker draggable
         var $marker = $(this.root).find('.marker');
         var drag = new Draggable($marker);
         drag.onrelease = function() {
           console.log(_this);
           _this.move();
         };
-
+        // Set initial state
         this.move(0);
       };
-
+      /** Move the marker to a specific interval or closest if null */
       Slider.prototype.move = function(offset) {
-        if (typeof offset === "undefined") {
+        if (offset === void 0) {
           offset = -1;
         }
         var $marker = $(this.root).find('.marker');
@@ -58,19 +63,19 @@
         }
         $marker.css('left', this._offset(this.offset));
       };
-
+      /** Bind a callback to invoke when the value changes on this object */
       Slider.prototype.change = function(callback) {
         this._change.push(callback);
       };
-
+      /** Next item */
       Slider.prototype.next = function() {
         this.move(this.offset + 1);
       };
-
+      /** Previous item */
       Slider.prototype.prev = function() {
         this.move(this.offset - 1);
       };
-
+      /** Trigger on change callbacks */
       Slider.prototype._trigger = function() {
         var _this = this;
         var schedule = function(i) {
@@ -82,7 +87,7 @@
           schedule(i);
         }
       };
-
+      /** Calculate the % offset for an index */
       Slider.prototype._offset = function(i) {
         var count = this.data.interval.length > 0 ? this.data.interval.length : 1;
         var size = 100 / (count - 1);
@@ -91,22 +96,24 @@
       return Slider;
     })();
     exports.Slider = Slider;
-
+    /** Slider factory */
     var SliderFactory = (function() {
       function SliderFactory() {
-        this.stylesheet = data.styles;
-      }
+          /** Inline styles */
+          this.stylesheet = data.styles;
+        }
+        /** Find root nodes */
       SliderFactory.prototype.query = function(root) {
         return $(root).find('.component--iwc-interval-slider');
       };
-
+      /** New instance */
       SliderFactory.prototype.factory = function() {
         return new Slider();
       };
       return SliderFactory;
     })();
     exports.SliderFactory = SliderFactory;
-
+    /** Draggable items */
     var Draggable = (function() {
       function Draggable(target) {
         this.onrelease = null;
@@ -122,9 +129,8 @@
         var width = this._root.parent().width();
         this._bounds = [offset.left, offset.left + width];
       };
-
       Draggable.prototype.move = function(pos, offset) {
-        if (typeof offset === "undefined") {
+        if (offset === void 0) {
           offset = null;
         }
         if (offset === null) {
@@ -134,7 +140,6 @@
         }
         this.offset = $(this._root).offset().left;
       };
-
       Draggable.prototype.track_cursor = function() {
         var _this = this;
         var start = function(e) {
@@ -143,7 +148,6 @@
         };
         $(this._root).bind('touchstart', start);
         $(this._root).bind('mousedown', start);
-
         var stop = function(e) {
           if (_this._active) {
             _this._active = false;
@@ -155,7 +159,6 @@
         };
         $(window).bind('mouseup', stop);
         $(window).bind('touchend', stop);
-
         var action = function(e) {
           if (_this._active) {
             if (!e.clientX) {
@@ -173,11 +176,10 @@
       return Draggable;
     })();
     exports.Draggable = Draggable;
-
+    // Actually register
     iwc.register(new SliderFactory());
   });
   //# sourceMappingURL=script.js.map
-
 })({
   styles: ".component--iwc-interval-slider {\n  position: relative; }\n  .component--iwc-interval-slider .intervals {\n    position: relative; }\n    .component--iwc-interval-slider .intervals .interval {\n      position: absolute;\n      width: 10px;\n      margin-left: -5px;\n      height: 10px;\n      background: #dfdfdf;\n      border-radius: 10px;\n      z-index: 1; }\n      .component--iwc-interval-slider .intervals .interval.active {\n        background: #af576b; }\n  .component--iwc-interval-slider .marker {\n    height: 20px;\n    width: 20px;\n    background: #efefef;\n    border: 1px solid #cfcfcf;\n    margin-left: -10px;\n    position: absolute;\n    top: -5px;\n    border-radius: 4px;\n    z-index: 2; }\n  .component--iwc-interval-slider .base {\n    position: relative;\n    top: 4px;\n    background: #dfdfdf;\n    height: 2px;\n    width: 100%; }\n\n/*# sourceMappingURL=styles.css.map */\n",
   markup: "<div><div class=\"marker\"></div><div class=\"intervals\"></div><div class=\"base\"></div></div>",

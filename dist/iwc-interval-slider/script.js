@@ -1,15 +1,20 @@
-define(["require", "exports", 'jquery', 'iwc'], function(require, exports, $, iwc) {
+define(["require", "exports", 'jquery', 'iwc'], function (require, exports, $, iwc) {
+    /** Slider type */
     var Slider = (function () {
         function Slider() {
+            /** On change callback */
             this._change = [];
+            /** The set of interval DOM nodes */
             this._intervals = [];
         }
+        /** Raw template for this component */
         Slider.prototype.content = function () {
             return data.markup;
         };
-
+        /** Run on start up */
         Slider.prototype.init = function () {
             var _this = this;
+            // Add intervals
             var $intervals = $(this.root).find('.intervals');
             for (var i = 0; i < this.data.interval.length; ++i) {
                 var $mark = $('<div></div>').attr('data-value', i).addClass('interval');
@@ -17,19 +22,19 @@ define(["require", "exports", 'jquery', 'iwc'], function(require, exports, $, iw
                 $intervals.append($mark);
                 this._intervals.push($mark);
             }
-
+            // Make the marker draggable
             var $marker = $(this.root).find('.marker');
             var drag = new Draggable($marker);
             drag.onrelease = function () {
                 console.log(_this);
                 _this.move();
             };
-
+            // Set initial state
             this.move(0);
         };
-
+        /** Move the marker to a specific interval or closest if null */
         Slider.prototype.move = function (offset) {
-            if (typeof offset === "undefined") { offset = -1; }
+            if (offset === void 0) { offset = -1; }
             var $marker = $(this.root).find('.marker');
             if (offset == -1) {
                 var min = -1;
@@ -55,19 +60,19 @@ define(["require", "exports", 'jquery', 'iwc'], function(require, exports, $, iw
             }
             $marker.css('left', this._offset(this.offset));
         };
-
+        /** Bind a callback to invoke when the value changes on this object */
         Slider.prototype.change = function (callback) {
             this._change.push(callback);
         };
-
+        /** Next item */
         Slider.prototype.next = function () {
             this.move(this.offset + 1);
         };
-
+        /** Previous item */
         Slider.prototype.prev = function () {
             this.move(this.offset - 1);
         };
-
+        /** Trigger on change callbacks */
         Slider.prototype._trigger = function () {
             var _this = this;
             var schedule = function (i) {
@@ -79,7 +84,7 @@ define(["require", "exports", 'jquery', 'iwc'], function(require, exports, $, iw
                 schedule(i);
             }
         };
-
+        /** Calculate the % offset for an index */
         Slider.prototype._offset = function (i) {
             var count = this.data.interval.length > 0 ? this.data.interval.length : 1;
             var size = 100 / (count - 1);
@@ -88,22 +93,24 @@ define(["require", "exports", 'jquery', 'iwc'], function(require, exports, $, iw
         return Slider;
     })();
     exports.Slider = Slider;
-
+    /** Slider factory */
     var SliderFactory = (function () {
         function SliderFactory() {
+            /** Inline styles */
             this.stylesheet = data.styles;
         }
+        /** Find root nodes */
         SliderFactory.prototype.query = function (root) {
             return $(root).find('.component--iwc-interval-slider');
         };
-
+        /** New instance */
         SliderFactory.prototype.factory = function () {
             return new Slider();
         };
         return SliderFactory;
     })();
     exports.SliderFactory = SliderFactory;
-
+    /** Draggable items */
     var Draggable = (function () {
         function Draggable(target) {
             this.onrelease = null;
@@ -119,17 +126,16 @@ define(["require", "exports", 'jquery', 'iwc'], function(require, exports, $, iw
             var width = this._root.parent().width();
             this._bounds = [offset.left, offset.left + width];
         };
-
         Draggable.prototype.move = function (pos, offset) {
-            if (typeof offset === "undefined") { offset = null; }
+            if (offset === void 0) { offset = null; }
             if (offset === null) {
                 this._root.css('left', pos);
-            } else {
+            }
+            else {
                 this._root.css('left', pos - offset);
             }
             this.offset = $(this._root).offset().left;
         };
-
         Draggable.prototype.track_cursor = function () {
             var _this = this;
             var start = function (e) {
@@ -138,7 +144,6 @@ define(["require", "exports", 'jquery', 'iwc'], function(require, exports, $, iw
             };
             $(this._root).bind('touchstart', start);
             $(this._root).bind('mousedown', start);
-
             var stop = function (e) {
                 if (_this._active) {
                     _this._active = false;
@@ -150,7 +155,6 @@ define(["require", "exports", 'jquery', 'iwc'], function(require, exports, $, iw
             };
             $(window).bind('mouseup', stop);
             $(window).bind('touchend', stop);
-
             var action = function (e) {
                 if (_this._active) {
                     if (!e.clientX) {
@@ -168,7 +172,7 @@ define(["require", "exports", 'jquery', 'iwc'], function(require, exports, $, iw
         return Draggable;
     })();
     exports.Draggable = Draggable;
-
+    // Actually register
     iwc.register(new SliderFactory());
 });
 //# sourceMappingURL=script.js.map

@@ -15,7 +15,7 @@ A simple slider with a fixed interval set.
 
 ## Build
 
-    npm install && grunt
+    npm install && tsd reinstall -overwrite && grunt
 
 ## Demo
 
